@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Lyrics Extractor - program to extract the lyrics of the song
+# Lyrics Grabber - program to extract the lyrics of the song
 # Copyright (c) 2014 - Atit Anand
 #
 # This program is free software: you can redistribute it and/or modify it under
