@@ -4,6 +4,8 @@ Lyrics Grabber! A simple lyrics grabber application for Linux. Successfully grab
 
 ## Dependencies
 
+Lyrics Grabber depends on the following:
+
 	* python 2.7 or above
 	* python-psycopg2
 	* pyGTK
@@ -26,6 +28,7 @@ Replace owner of the database `dawdler` with yours in the source code.
 To run Lyrics Grabber, execute it directly from the source folder:
 	
 	$ cd Lyrics-Grabber/
+
 	$ python lyrics_grabber.py
 
 ## Future
@@ -44,6 +47,6 @@ Lots of more features can be thought and added. Hopefully will be adding few of 
 
 ## Contributions
 
-Interested people are always free to contribute. Think of new features or something, feel free to code it up. Send merge requests, make sure you update AUTHORS and CHANGELOG. Beginners can easily understand this open source project. Anyone willing to improve their skills, can contribute to the project. Well, I am also a beginner. 
+Interested people are always free to contribute. Think of new features or something, feel free to code it up. Send merge requests, make sure you update AUTHORS and CHANGELOG files respectively. Beginners can easily understand this open source project. Anyone willing to improve their skills, can contribute to the project. Well, I am also a beginner. 
 
 Thanks for using Lyrics Grabber! Cheers!
