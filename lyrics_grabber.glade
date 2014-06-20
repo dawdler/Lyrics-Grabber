@@ -371,7 +371,7 @@
               <property name="has_tooltip">True</property>
               <property name="label" translatable="yes">Lyrics Extractor</property>
               <property name="relief">GTK_RELIEF_NONE</property>
-              <property name="uri">http://github.com/dawdler/projects/</property>
+              <property name="uri">https://github.com/dawdler/Lyrics-Grabber/</property>
               <signal name="clicked" handler="link_click"/>
             </object>
             <packing>

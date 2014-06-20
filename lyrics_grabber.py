@@ -17,9 +17,6 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-
-
-
 import os
 import sys
 import requests
@@ -27,13 +24,6 @@ import psycopg2
 import subprocess
 
 from gi.repository import Gtk
-
-#TODO Implement Prefrence class to hold this settings
-proxyDict = { 
-              "http"  : "http://edcguest:edcguest@172.31.102.29:3128/", 
-              "https" : "http://edcguest:edcguest@172.31.102.2:3128/", 
-              "ftp"   : "http://edcguest:edcguest@172.31.102.29:3128/"
-            }
 
 class Lyrics:
 	def gtk_main_quit(self, widget, data = None):
@@ -194,6 +184,7 @@ class Database:
 			self.con = psycopg2.connect(database='lyrics', user='dawdler',port='5433')
 			self.cur = self.con.cursor()
 			#self.cur.execute("DROP TABLE IF EXISTS music")
+			# check if the table is already created or not 
 			self.cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('music',))
 			if self.cur.fetchone()[0] is not True:
 			    self.cur.execute("CREATE TABLE music(artist VARCHAR(50) , song VARCHAR(50) PRIMARY KEY, contents BYTEA)")
