@@ -75,19 +75,8 @@ class Lyrics:
 
 	def parse_input(self, artist, song):
 	    valid = "0123456789abcdefghijklmnopqurstuvwxyz"
-	    artist = artist.lower()
-	    song = song.lower()
-	    artist = artist.replace(" ", "")
-	    song = song.replace(" ","")
-	    song = song.replace("'","")
-	    for ch in range(len(artist)):
-	        if valid.find(artist[ch]) == -1:
-	            artist = artist.replace(artist[ch], "")
-	   
-	    for ch in range(len(song)):
-	        if valid.find(song[ch]) == -1 :
-	            song = song.replace(song[ch], "")
-	    
+	    artist = ''.join([ch for ch in artist.lower() if ch in valid])
+	    song = ''.join([ch for ch in song.lower() if ch in valid])
 	    return artist, song
 
 	def make_url(self, artist, song):
