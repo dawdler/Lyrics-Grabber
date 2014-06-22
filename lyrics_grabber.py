@@ -20,10 +20,10 @@
 import os
 import sys
 import requests
-import psycopg2
 import subprocess
 
 from gi.repository import Gtk
+from database import Database
 
 class Lyrics:
 	def gtk_main_quit(self, widget, data = None):
@@ -38,12 +38,13 @@ class Lyrics:
 			os.system("htmlview "+widget.get_uri())
 
 	def new_search(self, widget, data = None):
+		'''Users request for new search. Window should come back to initial state'''
 		self.artist_name.set_text("")
 		self.song_name.set_text("")
 		self.status_bar.hide()
 		self.lyrics_view.hide()
 		self.scroll.hide()
-
+		
 	def open_mp3(self, widget, data = None):
 		'''Opens a mp3 file. Extracts artist name and song name and display the lyrics '''
 		print "This feature will be implemented soon"
@@ -86,7 +87,7 @@ class Lyrics:
 
 	def fetch_lyrics(self, url):
 		'''Fetch the lyrics from azlyrics.com'''
-		#data=requests.get(url,proxies=proxyDict) #will be used when internet is accessed via proxy server
+		#data=requests.get(url,proxies=proxyDict) # will be used when internet is accessed via proxy server
 		try:
 			data = requests.get(url) #for accessing internet without proxy server
 			data1 = data.content
@@ -146,9 +147,9 @@ class Lyrics:
 			context_id = self.status_bar.get_context_id("")
 			self.status_bar.push(context_id, "Lyrics Extracted Successfully")
 		
-	def __init__(self, database):
+	def __init__(self):
 		self.is_running()
-		self.database = database
+		self.database = Database()
 		builder = Gtk.Builder()
 		builder.add_from_file("lyrics_grabber.glade")
 		self.window = builder.get_object("window1")
@@ -165,54 +166,9 @@ class Lyrics:
 		self.about  = builder.get_object("aboutdialog1")
 		builder.connect_signals(self)
 		    
-
-class Database:
-	def __init__(self):
-		'''connect to database holding the lyrics'''
-		try:
-			self.con = psycopg2.connect(database='lyrics', user='dawdler',port='5433')
-			self.cur = self.con.cursor()
-			#self.cur.execute("DROP TABLE IF EXISTS music")
-			# check if the table is already created or not 
-			self.cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('music',))
-			if self.cur.fetchone()[0] is not True:
-			    self.cur.execute("CREATE TABLE music(artist VARCHAR(50) , song VARCHAR(50) PRIMARY KEY, contents BYTEA)")
-			    self.con.commit()
-			    #print "table created Successfully"
-			    self.status = True
-		except psycopg2.DatabaseError, e:
-		    print 'Error %s' % e
-		    self.status = False
-
-	def save_to_db(self, artist, song, data):
-		binary_data = psycopg2.Binary(data)
-		self.cur.execute("INSERT INTO music(artist, song, contents) VALUES(%s,%s,%s)",(artist, song, binary_data))
-		self.con.commit()
-
-	def find_in_db(self, artist, song):
-		self.cur.execute("SELECT * from music where artist=%s and song=%s",(artist,song))
-		row = self.cur.fetchone()
-		if row == None:
-			#print "data not present"
-			return -2
-		else:
-			return self.save_to_file(row[2])
-
-	def save_to_file(self, lyrics):
-		file = open("lyrics_temp.txt","wb")
-		file.write(lyrics)
-		file.close()
-		file = open("lyrics_temp.txt","r")
-		data = file.read()
-		file.close()
-		os.remove("lyrics_temp.txt")
-		return data
-
 #=== EXECUTION ================================================================
 
-
 if __name__ == "__main__":
-	database = Database()
-	lyrics = Lyrics(database)
+	lyrics = Lyrics()
 	lyrics.window.show()
 	Gtk.main()
