@@ -15,13 +15,19 @@ Lyrics Grabber depends on the following:
 
 First, Install the above dependencies.
 
+	$ sudo apt-get install postgresql # installs PostgreSQL database on local system
+
+	$ sudo service postgresql start # Run PostgreSQL server
+
+	$ sudo apt-get install python-psycopg2 # install psycopg2 package
+
 Second, you'll need to create a postgresql database where Lyrics Grabber can store the lyrics. For example, on your local setup:
 
 	$ sudo -u postgres createuser dawdler(ownner of the database)
 
 	$ sudo -u postgres createdb lyrics -O dawdler
 
-Replace owner of the database `dawdler` with yours in the source code.
+Replace owner of the database `dawdler` with yours in the source code and as well as in above commands.
 
 ## Running
 
