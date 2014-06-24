@@ -5,6 +5,9 @@
     <property name="can_focus">False</property>
     <property name="opacity">0.80000000000000004</property>
     <property name="window_position">center</property>
+    <property name="default_width">405</property>
+    <property name="default_height">155</property>
+    <property name="border_width">10</property>
     <signal name="delete-event" handler="gtk_main_quit" swapped="no"/>
     <signal name="destroy" handler="gtk_main_quit"/>
     <child>

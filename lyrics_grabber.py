@@ -24,17 +24,18 @@ import subprocess
 
 from gi.repository import Gtk
 from database import Database
+from gi.repository.Gdk import Color
 
 class Lyrics:
 	def gtk_main_quit(self, widget, data = None):
 			self.remove_pidfile()
 			Gtk.main_quit()
 
-	def help_about(self, widget,data=None):
+	def help_about(self, widget,data = None):
 			result = self.about.run()
 			self.about.hide()
 
-	def link_click(self, widget,data=None):
+	def link_click(self, widget,data = None):
 			os.system("htmlview "+widget.get_uri())
 
 	def new_search(self, widget, data = None):
@@ -44,7 +45,8 @@ class Lyrics:
 		self.status_bar.hide()
 		self.lyrics_view.hide()
 		self.scroll.hide()
-		
+		self.window.resize(self.width, self.height)
+				
 	def open_mp3(self, widget, data = None):
 		'''Opens a mp3 file. Extracts artist name and song name and display the lyrics '''
 		print "This feature will be implemented soon"
@@ -98,6 +100,8 @@ class Lyrics:
 			    return -2
 			end = where_end - 2
 			lyrics = unicode(data1[start:end].replace('<br />', ''), "UTF8")
+			lyrics = lyrics.replace('<i>','')
+			lyrics = lyrics.replace('</i>','')
 			return lyrics
 	  	except:
 	  		return -1
@@ -153,18 +157,23 @@ class Lyrics:
 		builder = Gtk.Builder()
 		builder.add_from_file("lyrics_grabber.glade")
 		self.window = builder.get_object("window1")
+		self.window.set_resizable(False)
 		self.window.set_title("Lyrics Grabber!")
 		self.hbox1 = builder.get_object("box1")
 		self.artist_name = builder.get_object("artist_name")
 		self.song_name = builder.get_object("song_name")
 		self.scroll = builder.get_object("scrolledwindow1")
 		self.status_bar = builder.get_object("statusbar1")
+		self.menubar = builder.get_object("menubar1")
+		self.button = builder.get_object("get_lyrics")
 		self.scroll.hide()
 
 		self.lyrics_view = builder.get_object("textview1")
 		self.lyrics_view.hide()
+		self.width, self.height = self.window.get_size()
 		self.about  = builder.get_object("aboutdialog1")
 		builder.connect_signals(self)
+		
 		    
 #=== EXECUTION ================================================================
 
