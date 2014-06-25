@@ -119,7 +119,7 @@ class Lyrics:
         self.lyrics = -2
         found = False
         
-        if self.database: #connected to database successfully
+        if self.database.status: #connected to database successfully
             self.lyrics = self.database.find_in_db(self.artist, self.song) # Search lyrics in database. If found, return lyrics
         
         if self.lyrics is -2:
