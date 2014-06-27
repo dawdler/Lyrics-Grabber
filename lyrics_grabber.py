@@ -32,19 +32,18 @@ class LyricsApplication():
         self.is_running()
         self.database = Database()
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("lyrics_grabber.glade")
+        self.builder.add_from_file("app.glade")
 
         self.window = self.builder.get_object("MainWindow")
-        self.window.set_title("Lyrics Grabber!")
-        self.hbox1 = self.builder.get_object("box1")
-        self.artist_name = self.builder.get_object("artist_name")
-        self.song_name = self.builder.get_object("song_name")
-        self.scroll = self.builder.get_object("scrolledwindow1")
-        self.status_bar = self.builder.get_object("statusbar1")
-        self.menubar = self.builder.get_object("menubar1")
-        self.button = self.builder.get_object("get_lyrics")
-        self.lyrics_view = self.builder.get_object("textview1")
-        self.about = self.builder.get_object("aboutdialog1")
+        self.hbox1 = self.builder.get_object("menu_box")
+        self.artist_name = self.builder.get_object("artist_entry")
+        self.song_name = self.builder.get_object("song_entry")
+        self.scroll = self.builder.get_object("lyrics_scroll_container")
+        self.status_bar = self.builder.get_object("statusbar")
+        self.menubar = self.builder.get_object("menu")
+        self.button = self.builder.get_object("get_lyrics_button")
+        self.lyrics_view = self.builder.get_object("lyrics_display")
+        self.about = self.builder.get_object("about")
 
         self.window.set_resizable(False)
         self.scroll.hide()
@@ -67,7 +66,6 @@ class LyricsApplication():
         self._add_accelerator_for_widget(accel_group, "quit_s", "<Control>q")
         self._add_accelerator_for_widget(accel_group, "pref_s", "<Control>p")
         self._add_accelerator_for_widget(accel_group, "about_s", "F1")
-        # TODO there must be some accelerator for get_lyrics widget also
 
     def _add_accelerator_for_widget(self, accel_group, name, accel):
         widget = self.builder.get_object(name)

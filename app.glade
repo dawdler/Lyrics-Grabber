@@ -3,7 +3,8 @@
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkWindow" id="MainWindow">
     <property name="can_focus">False</property>
-    <property name="opacity">0.80000000000000004</property>
+    <property name="opacity">1.0</property>
+    <property name="title">Lyrics Grabber!</property>
     <property name="window_position">center</property>
     <property name="default_width">405</property>
     <property name="default_height">155</property>
@@ -11,17 +12,17 @@
     <signal name="delete-event" handler="gtk_main_quit" swapped="no"/>
     <signal name="destroy" handler="gtk_main_quit"/>
     <child>
-      <object class="GtkBox" id="box1">
+      <object class="GtkBox" id="menu_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkMenuBar" id="menubar1">
+          <object class="GtkMenuBar" id="menu">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="opacity">0.80000000000000004</property>
+            <property name="opacity">1.0</property>
             <child>
-              <object class="GtkMenuItem" id="menuitem1">
+              <object class="GtkMenuItem" id="file_menu">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_File</property>
@@ -71,7 +72,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
+              <object class="GtkMenuItem" id="edit_menu">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Edit</property>
@@ -92,11 +93,10 @@
                     </child>
                   </object>
                 </child>
-                
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem4">
+              <object class="GtkMenuItem" id="help_menu">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
@@ -127,7 +127,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box2">
+          <object class="GtkBox" id="entry_fields">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
@@ -136,12 +136,12 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkLabel" id="label1">
+                  <object class="GtkLabel" id="artist_label">
                     <property name="width_request">170</property>
                     <property name="height_request">37</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="opacity">0.80000000000000004</property>
+                    <property name="opacity">1.0</property>
                     <property name="label" translatable="yes">Artist Name</property>
                     <property name="max_width_chars">1</property>
                   </object>
@@ -155,12 +155,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkEntry" id="artist_name">
+                      <object class="GtkEntry" id="artist_entry">
                         <property name="width_request">157</property>
                         <property name="height_request">32</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="opacity">0.80000000000000004</property>
+                        <property name="opacity">1.0</property>
+                        <property name="activates_default">True</property>
                         <property name="width_chars">25</property>
                       </object>
                       <packing>
@@ -189,12 +190,12 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkLabel" id="label2">
+                  <object class="GtkLabel" id="song_label">
                     <property name="width_request">170</property>
                     <property name="height_request">37</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="opacity">0.80000000000000004</property>
+                    <property name="can_focus">False</property>
+                    <property name="opacity">1.0</property>
                     <property name="label" translatable="yes">Song Name</property>
                   </object>
                   <packing>
@@ -207,12 +208,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkEntry" id="song_name">
+                      <object class="GtkEntry" id="song_entry">
                         <property name="width_request">157</property>
                         <property name="height_request">32</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="opacity">0.80000000000000004</property>
+                        <property name="opacity">1.0</property>
+                        <property name="activates_default">True</property>
                         <property name="invisible_char">●</property>
                         <property name="width_chars">25</property>
                         <property name="shadow_type">none</property>
@@ -243,7 +245,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkLabel" id="label3">
+                  <object class="GtkLabel" id="empty_space">
                     <property name="width_request">105</property>
                     <property name="height_request">0</property>
                     <property name="visible">True</property>
@@ -259,15 +261,16 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkButton" id="get_lyrics">
+                      <object class="GtkButton" id="get_lyrics_button">
                         <property name="label" translatable="yes">Get Lyrics</property>
                         <property name="width_request">145</property>
                         <property name="height_request">34</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_default">True</property>
+                        <property name="has_default">True</property>
                         <signal name="clicked" handler="get_lyrics"/>
-                        <property name="opacity">0.80000000000000004</property>
+                        <property name="opacity">1.0</property>
                       </object>
                       <packing>
                         <property name="resize">False</property>
@@ -305,15 +308,15 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="visible">True</property>
+          <object class="GtkScrolledWindow" id="lyrics_scroll_container">
+            <property name="visible">False</property>
             <property name="width_request">150</property>
             <property name="height_request">150</property>
             <property name="can_focus">False</property>
             <property name="shadow_type">in</property>
             <child>
-              <object class="GtkTextView" id="textview1">
-                <property name="visible">True</property>
+              <object class="GtkTextView" id="lyrics_display">
+                <property name="visible">False</property>
                 <property name="can_focus">False</property>
                 <property name="width_request">150</property>
                 <property name="height_request">150</property>
@@ -328,12 +331,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box3">
+          <object class="GtkBox" id="status_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-                <object class="GtkStatusbar" id="statusbar1">
+                <object class="GtkStatusbar" id="statusbar">
                   <property name="visible">True</property>
                   <property name="can_focus">False</property>
                   <property name="orientation">vertical</property>
@@ -351,7 +354,7 @@
       </object>
     </child>
   </object>
-  <object class="GtkAboutDialog" id="aboutdialog1">
+  <object class="GtkAboutDialog" id="about">
       <property name="border_width">5</property>
       <property name="title" translatable="yes">About Glade</property>
       <property name="resizable">False</property>
@@ -367,12 +370,12 @@
           <property name="visible">True</property>
           <property name="spacing">1</property>
           <child>
-            <object class="GtkLinkButton" id="linkbutton1">
+            <object class="GtkLinkButton" id="git_link">
               <property name="visible">True</property>
               <property name="can_focus">True</property>
               <property name="receives_default">True</property>
               <property name="has_tooltip">True</property>
-              <property name="label" translatable="yes">Lyrics Extractor</property>
+              <property name="label" translatable="yes">Find us on Github!</property>
               <property name="relief">GTK_RELIEF_NONE</property>
               <property name="uri">https://github.com/dawdler/Lyrics-Grabber/</property>
               <signal name="clicked" handler="link_click"/>
