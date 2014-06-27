@@ -19,142 +19,15 @@
 
 import os
 import sys
+import re
+
 import requests
-import subprocess
-
 from gi.repository import Gtk
+
 from database import Database
-from gi.repository.Gdk import Color
-
-class Lyrics:
-    def gtk_main_quit(self, widget, data = None):
-            self.remove_pidfile()
-            Gtk.main_quit()
-
-    def help_about(self, widget,data = None):
-            result = self.about.run()
-            self.about.hide()
-
-    def link_click(self, widget,data = None):
-            os.system("htmlview "+widget.get_uri())
-
-    def new_search(self, widget, data = None):
-        '''Users request for new search. Window should come back to initial state'''
-        self.artist_name.set_text("")
-        self.song_name.set_text("")
-        self.status_bar.hide()
-        self.lyrics_view.hide()
-        self.scroll.hide()
-        self.window.resize(self.width, self.height)
-                
-    def open_mp3(self, widget, data = None):
-        '''Opens a mp3 file. Extracts artist name and song name and display the lyrics '''
-        print "This feature will be implemented soon"
 
 
-    def on_preference(self, widget, data = None):
-        '''Dialog box will contains options likes settings for proxy server and all other settings '''
-        print "This feature will be implemented soon"
-
-    def is_running(self):
-        pid = str(os.getpid())
-        #dropping pid file to check already running instance
-        pidfile = "/tmp/lyrics_grabber.pid"
-
-        if os.path.isfile(pidfile):
-            print "Lyrics Grabber already running, exiting"
-            sys.exit(0)
-        else:
-            file(pidfile, 'w').write(pid)
-                    
-    def remove_pidfile(self):
-        '''Remove the pid file'''
-        pidfile = "/tmp/lyrics_grabber.pid"
-        try:
-            os.unlink(pidfile)
-        except OSError:
-            # Ignore the missing pid file
-            pass
-
-    def parse_input(self, artist, song):
-        valid = "0123456789abcdefghijklmnopqurstuvwxyz"
-        artist = ''.join([ch for ch in artist.lower() if ch in valid])
-        song = ''.join([ch for ch in song.lower() if ch in valid])
-        return artist, song
-
-    def make_url(self, artist, song):
-        '''Returns the url of the page from which lyrics will be extracted'''
-        url = "http://www.azlyrics.com/lyrics/" + artist + "/" + song + ".html"
-        return url
-
-    def fetch_lyrics(self, url):
-        '''Fetch the lyrics from azlyrics.com'''
-        #data=requests.get(url,proxies=proxyDict) # will be used when internet is accessed via proxy server
-        try:
-            data = requests.get(url) #for accessing internet without proxy server
-            data1 = data.content
-            where_start = data1.find('<!-- start of lyrics -->')
-            start = where_start + 26
-            where_end = data1.find('<!-- end of lyrics -->')
-            if where_start == -1 or  where_end == -1:
-                return -2
-            end = where_end - 2
-            lyrics = unicode(data1[start:end].replace('<br />', ''), "UTF8")
-            lyrics = lyrics.replace('<i>','')
-            lyrics = lyrics.replace('</i>','')
-            return lyrics
-        except:
-            return -1
-        
-
-    def get_lyrics(self, widget, data = None):
-        self.status_bar.hide()
-        self.lyrics_view.hide()
-        self.scroll.hide()
-        self.artist, self.song = self.artist_name.get_text(), self.song_name.get_text()
-
-        self.artist, self.song = self.parse_input(self.artist,
-                                                  self.song)
-        
-        self.lyrics = -2
-        found = False
-        
-        if self.database.status: #connected to database successfully
-            self.lyrics = self.database.find_in_db(self.artist, self.song) # Search lyrics in database. If found, return lyrics
-        
-        if self.lyrics is -2:
-            found = False
-        else: 
-            found = True
-        
-        if self.lyrics is -2:
-            self.url = self.make_url(self.artist, self.song)
-            self.lyrics = self.fetch_lyrics(self.url) # Not Found in database, fetch lyrics from web
-            #print "Not found in database."
-        
-        context_id = self.status_bar.get_context_id("")
-        self.status_bar.show()
-        
-        if self.lyrics == -2:           
-            self.status_bar.push(context_id, "Lyrics Not Available")
-
-        elif self.lyrics == -1:
-            self.status_bar.push(context_id, "Network Connection Problem")
-
-        else:
-            self.scroll.show()
-            self.lyrics_view.show()
-            self.buffer = self.lyrics_view.get_buffer()
-            #self.lyrics_view.set_text(self.lyrics)
-            self.buffer.set_text(self.lyrics)
-            if found is not True:
-                #TODO directly convert UTF-8 to binary
-                data = self.database.save_to_file(self.lyrics)
-                self.database.save_to_db(self.artist, self.song, data) # save the extracted lyrics to database
-            
-            context_id = self.status_bar.get_context_id("")
-            self.status_bar.push(context_id, "Lyrics Extracted Successfully")
-
+class LyricsApplication():
     def __init__(self):
         self.is_running()
         self.database = Database()
@@ -171,41 +44,161 @@ class Lyrics:
         self.menubar = self.builder.get_object("menubar1")
         self.button = self.builder.get_object("get_lyrics")
         self.lyrics_view = self.builder.get_object("textview1")
-        self.about  = self.builder.get_object("aboutdialog1")
-        
+        self.about = self.builder.get_object("aboutdialog1")
+
         self.window.set_resizable(False)
-        self.scroll.hide()        
+        self.scroll.hide()
         self.lyrics_view.hide()
         self.width, self.height = self.window.get_size()
-        
+
         # Connect to signals
         self.builder.connect_signals(self)
 
         # Define accelerator keys
         self._init_accelerators()
 
-    def _add_accelerator_for_widget(self, agr, name, accel):
-        widget = self.builder.get_object(name)
-        key, mod = Gtk.accelerator_parse(accel)
-        widget.add_accelerator("activate", agr, key, mod,
-                               Gtk.AccelFlags.VISIBLE)
-
 
     def _init_accelerators(self):
-        '''Initialize gtk accelerators for different interface elements'''
-        acc = Gtk.AccelGroup()
-        self.builder.get_object("MainWindow").add_accel_group(acc)
-        self._add_accelerator_for_widget(acc, "new_s", "<Control>n")
-        self._add_accelerator_for_widget(acc, "open_s", "<Control>o")
-        self._add_accelerator_for_widget(acc, "quit_s", "<Control>q")
-        self._add_accelerator_for_widget(acc, "pref_s", "<Control>p")
-        self._add_accelerator_for_widget(acc, "about_s", "F1")
-        #TODO there must be some accelerator for get_lyrics widget also
+        """Initialize gtk accelerators for different interface elements"""
+        accel_group = Gtk.AccelGroup()
+        self.builder.get_object("MainWindow").add_accel_group(accel_group)
+        self._add_accelerator_for_widget(accel_group, "new_s", "<Control>n")
+        self._add_accelerator_for_widget(accel_group, "open_s", "<Control>o")
+        self._add_accelerator_for_widget(accel_group, "quit_s", "<Control>q")
+        self._add_accelerator_for_widget(accel_group, "pref_s", "<Control>p")
+        self._add_accelerator_for_widget(accel_group, "about_s", "F1")
+        # TODO there must be some accelerator for get_lyrics widget also
+
+    def _add_accelerator_for_widget(self, accel_group, name, accel):
+        widget = self.builder.get_object(name)
+        key, mod = Gtk.accelerator_parse(accel)
+        widget.add_accelerator("activate", accel_group, key, mod, Gtk.AccelFlags.VISIBLE)
+
+    def gtk_main_quit(self, widget, data=None):
+        self.remove_pidfile()
+        Gtk.main_quit()
+
+    def help_about(self, widget, data=None):
+        result = self.about.run()
+        self.about.hide()
+
+    def link_click(self, widget, data=None):
+        os.system("htmlview " + widget.get_uri())
+
+    def new_search(self, widget, data=None):
+        """Users request for new search. Window should come back to initial state"""
+        self.artist_name.set_text("")
+        self.song_name.set_text("")
+        self.status_bar.hide()
+        self.lyrics_view.hide()
+        self.scroll.hide()
+        self.window.resize(self.width, self.height)
+
+    def open_mp3(self, widget, data=None):
+        """Opens a mp3 file. Extracts artist name and song name and display the lyrics """
+        print "This feature will be implemented soon"
 
 
-#=== EXECUTION ================================================================
+    def on_preference(self, widget, data=None):
+        """Dialog box will contains options likes settings for proxy server and all other settings """
+        print "This feature will be implemented soon"
 
+    def is_running(self):
+        pid = str(os.getpid())
+        # dropping pid file to check already running instance
+        pidfile = "/tmp/lyrics_grabber.pid"
+
+        if os.path.isfile(pidfile):
+            print "Lyrics Grabber already running, exiting"
+            sys.exit(0)
+        else:
+            file(pidfile, 'w').write(pid)
+
+    def remove_pidfile(self):
+        """Remove the pid file"""
+        pidfile = "/tmp/lyrics_grabber.pid"
+        try:
+            os.unlink(pidfile)
+        except OSError:
+            # Ignore the missing pid file
+            pass
+
+    def clean_user_input(self, user_input):
+        """Deletes any illegal characters for urls"""
+        legal_chars = re.compile(r'^[a-z0-9]$')
+        return filter(lambda c: re.match(legal_chars, c), user_input.lower())
+
+    def make_url(self, artist, song):
+        """Returns the url of the page from which lyrics will be extracted"""
+        url = "http://www.azlyrics.com/lyrics/{}/{}.html".format(artist, song)
+        return url
+
+    # This code is pretty hacky, we should try to clean it up. It works though.
+    def fetch_lyrics(self, url):
+        """Fetch the lyrics from azlyrics.com"""
+        # data=requests.get(url,proxies=proxyDict) # will be used when internet is accessed via proxy server
+        data = requests.get(url)  # for accessing internet without proxy server
+        data1 = data.content
+        where_start = data1.find('<!-- start of lyrics -->')
+        start = where_start + 26
+        where_end = data1.find('<!-- end of lyrics -->')
+        if where_start == -1 or where_end == -1:
+            return False
+        end = where_end - 2
+        lyrics = unicode(data1[start:end].replace('<br />', ''), "UTF8")
+        lyrics = lyrics.replace('<i>', '')
+        lyrics = lyrics.replace('</i>', '')
+        return lyrics
+
+    def display_message(self, message):
+        """Displays the message in a pop up status bar"""
+        context_id = self.status_bar.get_context_id("")
+        self.status_bar.show()
+        self.status_bar.push(context_id, message)
+
+
+    def get_lyrics(self, widget, data=None):
+        """Retrieves the lyrics for a given artist and song. First checks for lyrics in database,
+        and if not found grabs the lyrics from the web."""
+
+        # Disable lyrics display
+        self.status_bar.hide()
+        self.lyrics_view.hide()
+        self.scroll.hide()
+
+        # Parse user input
+        artist = self.clean_user_input(self.artist_name.get_text())
+        song = self.clean_user_input(self.song_name.get_text())
+
+        lyrics = None
+        in_database = False
+
+        if self.database.status:  # Testing connection to database
+            lyrics = self.database.retrieve_lyrics(artist, song)
+            if lyrics:  # False if not found in database
+                in_database = True
+
+        if not lyrics:  # Try next to retrieve from web
+            url = self.make_url(artist, song)
+            lyrics = self.fetch_lyrics(url)
+
+        if not lyrics:  # Not available in database or on web
+            self.display_message('Lyrics Not Available')
+        else:
+            # Set the display
+            lyrics_buffer = self.lyrics_view.get_buffer()
+            lyrics_buffer.set_text(lyrics)
+
+            if not in_database: # Save if not in database
+                self.database.save(artist, song, lyrics)
+
+            # Re-enable lyrics display
+            self.scroll.show()
+            self.lyrics_view.show()
+            self.display_message('Lyrics Extracted Successfully')
+
+# === EXECUTION ================================================================
 if __name__ == "__main__":
-    lyrics = Lyrics()
-    lyrics.window.show()
+    app = LyricsApplication()
+    app.window.show()
     Gtk.main()
