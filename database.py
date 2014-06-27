@@ -19,41 +19,34 @@
 
 
 import sqlite3
-import os
+
 
 class Database:
     def __init__(self):
-        '''connect to database holding the lyrics'''
+        """Connect to lyrics database"""
         try:
-            self.conn = sqlite3.connect('music.db')
-            self.conn.execute('''CREATE TABLE IF NOT EXISTS Lyrics
-            (artist           TEXT    NOT NULL,
-            song          TEXT    NOT NULL,
-            contents       BYTEA);''')
-            self.status = True #table created successfully
-        except:
+            self.conn = sqlite3.connect('lyrics.db')
+            # Artist/Song primary key because there is only one lyric song/artist
+            self.conn.execute("""CREATE TABLE IF NOT EXISTS LyricsCache
+            (artist TEXT NOT NULL,
+            song TEXT NOT NULL,
+            lyrics TEXT NOT NULL,
+            PRIMARY KEY (artist, song));""")
+            self.status = True  # Database ready to use, connection valid
+        except sqlite3.DatabaseError:
             print "Something wrong with database"
             self.status = False
 
-    def save_to_db(self, artist, song, data):
-        '''save the extracted lyrics from web into database so that for the same request we don't have to search web. '''
-        binary_data = sqlite3.Binary(data)
-        self.conn.execute("INSERT INTO Lyrics VALUES(?, ?, ?);",(artist, song, binary_data))
+    def save(self, artist, song, lyrics):
+        """Save the web-extracted lyrics"""
+        self.conn.execute("INSERT INTO LyricsCache VALUES(?, ?, ?);", (artist, song, lyrics))
         self.conn.commit()
 
-    def find_in_db(self, artist, song):
-        '''Before searching web for lyrics, search into database. If found, return the lyrics'''
-        rows = self.conn.execute("SELECT * from Lyrics where artist = ? and song = ?",(artist, song))
-        for row in rows:
-            return self.save_to_file(row[2])        
-        return -2
-        
-    def save_to_file(self, lyrics):
-        file = open("lyrics_temp.txt","wb")
-        file.write(lyrics)
-        file.close()
-        file = open("lyrics_temp.txt","r")
-        data = file.read()
-        file.close()
-        os.remove("lyrics_temp.txt")
-        return data
+    def retrieve_lyrics(self, artist, song):
+        """Returns lyrics or False if the lyrics are not in the database"""
+        reply = self.conn.execute("SELECT lyrics FROM LyricsCache WHERE artist = ? AND song = ?;", (artist, song))
+        rows = reply.fetchall()
+        if len(rows) == 1:
+            return rows[0][0]  # The artist/song lyrics - unpacking rows then row tuple
+        else:
+            return False  # No results found
