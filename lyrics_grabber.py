@@ -178,7 +178,11 @@ class LyricsApplication():
 
         if not lyrics:  # Try next to retrieve from web
             url = self.make_url(artist, song)
-            lyrics = self.fetch_lyrics(url)
+            try:
+                lyrics = self.fetch_lyrics(url)
+            except:
+                self.display_message('Internet Connection Problem') # Could not connect to internet
+                return
 
         if not lyrics:  # Not available in database or on web
             self.display_message('Lyrics Not Available')
