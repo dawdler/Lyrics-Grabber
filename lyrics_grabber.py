@@ -131,22 +131,17 @@ class LyricsApplication():
         url = "http://www.azlyrics.com/lyrics/{}/{}.html".format(artist, song)
         return url
 
-    # This code is pretty hacky, we should try to clean it up. It works though.
     def fetch_lyrics(self, url):
         """Fetch the lyrics from azlyrics.com"""
         # data=requests.get(url,proxies=proxyDict) # will be used when internet is accessed via proxy server
-        data = requests.get(url)  # for accessing internet without proxy server
-        data1 = data.content
-        where_start = data1.find('<!-- start of lyrics -->')
-        start = where_start + 26
-        where_end = data1.find('<!-- end of lyrics -->')
-        if where_start == -1 or where_end == -1:
-            return False
-        end = where_end - 2
-        lyrics = unicode(data1[start:end].replace('<br />', ''), "UTF8")
-        lyrics = lyrics.replace('<i>', '')
-        lyrics = lyrics.replace('</i>', '')
-        return lyrics
+        page = requests.get(url)  # for accessing internet without proxy server
+        # Regex out the lyrics from the html content
+        lyrics = re.search(b'<!-- start of lyrics -->(?:\r\n)+(.+)(?:\r\n)+<!-- end of lyrics -->', page.content, re.DOTALL)
+        if lyrics:
+            # Strip html tags from decoded lyrics
+            return re.sub(r'<.+>', '', lyrics.group(1).decode('utf8'))
+        else:
+            return None
 
     def display_message(self, message):
         """Displays the message in a pop up status bar"""

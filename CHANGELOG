@@ -4,3 +4,5 @@
     * Cleaned up getting and storing lyrics in database
 2014-06-27 Cleaned up UI 0.12
     * Renamed components of UI, increased opacity, and bound enter to button.
+2014-06-30 Cleaned up fetching lyrics 0.13
+    * Changed string finding and replacing to re module.
