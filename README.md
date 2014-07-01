@@ -9,6 +9,7 @@ Lyrics Grabber depends on the following:
 	* python 2.7 or above
 	* python-sqlite3
 	* pyGTK
+	* python-dbus
 	* python-requests
 
 
@@ -28,7 +29,7 @@ Well, this is simple summer project started  so that I could get better with pyt
 	* Preference class that will hold the necessary settings needed to run the application.
 	* Improve the look and feel of the UI.
 	* Extracting artist/song name by opening a music file.
-	* Display the lyrics of the currently running song in banshee, rhythmbox, etc.
+	* Display the lyrics of the currently running song in amarok, rhythmbox, etc.
 	* Remove the existing bugs from the application.
 	* Tagging lyrics in the music file itself.
 

@@ -17,13 +17,16 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
+# system imports
 import os
 import sys
 import re
-
+import dbus
 import requests
+
 from gi.repository import Gtk
 
+# our own imports
 from database import Database
 
 
@@ -56,6 +59,9 @@ class LyricsApplication():
         # Define accelerator keys
         self._init_accelerators()
 
+        # Initialize D-Bus
+        self._init_dbus() 
+
 
     def _init_accelerators(self):
         """Initialize gtk accelerators for different interface elements"""
@@ -67,6 +73,16 @@ class LyricsApplication():
         self._add_accelerator_for_widget(accel_group, "pref_s", "<Control>p")
         self._add_accelerator_for_widget(accel_group, "about_s", "F1")
 
+    def _init_dbus(self):
+        """Initialize new D-Bus session"""
+        self.players = [ 'amarokapp','amarok','rhythmbox','audacious','banshee',
+                        'exaile','gmusicbrowser','juk','quodlibet','listen','songbird',
+                        'muine','beep-media-play','mpd' ]
+        try:
+            self.bus=dbus.SessionBus()
+        except ImportError:
+            self.display_message("Some issues python-dbus")
+            
     def _add_accelerator_for_widget(self, accel_group, name, accel):
         widget = self.builder.get_object(name)
         key, mod = Gtk.accelerator_parse(accel)
@@ -95,7 +111,6 @@ class LyricsApplication():
     def open_mp3(self, widget, data=None):
         """Opens a mp3 file. Extracts artist name and song name and display the lyrics """
         print "This feature will be implemented soon"
-
 
     def on_preference(self, widget, data=None):
         """Dialog box will contains options likes settings for proxy server and all other settings """
@@ -126,6 +141,11 @@ class LyricsApplication():
         legal_chars = re.compile(r'^[a-z0-9]$')
         return filter(lambda c: re.match(legal_chars, c), user_input.lower())
 
+    def set_artist_song_entry(self, artist, song):
+        """Sets entry box of artist name and song name"""
+        self.artist_name.set_text(artist)
+        self.song_name.set_text(song)
+
     def make_url(self, artist, song):
         """Returns the url of the page from which lyrics will be extracted"""
         url = "http://www.azlyrics.com/lyrics/{}/{}.html".format(artist, song)
@@ -149,8 +169,15 @@ class LyricsApplication():
         self.status_bar.show()
         self.status_bar.push(context_id, message)
 
+    def get_user_input(self, widget, data = None):
+        """Gets user's inputs for artist and song name"""
+        # Parse user input
+        artist = self.clean_user_input(self.artist_name.get_text())
+        song = self.clean_user_input(self.song_name.get_text())
+        self.get_lyrics(artist, song)
 
-    def get_lyrics(self, widget, data=None):
+
+    def get_lyrics(self, artist, song):
         """Retrieves the lyrics for a given artist and song. First checks for lyrics in database,
         and if not found grabs the lyrics from the web."""
 
@@ -158,10 +185,6 @@ class LyricsApplication():
         self.status_bar.hide()
         self.lyrics_view.hide()
         self.scroll.hide()
-
-        # Parse user input
-        artist = self.clean_user_input(self.artist_name.get_text())
-        song = self.clean_user_input(self.song_name.get_text())
 
         lyrics = None
         in_database = False
@@ -193,6 +216,45 @@ class LyricsApplication():
             self.scroll.show()
             self.lyrics_view.show()
             self.display_message('Lyrics Extracted Successfully')
+
+    def get_current_playing(self, widget, data = None):
+        """ Retrives the current playing media applicaiton"""
+        self.progs = os.popen('ps -eo comm').read().split('\n')
+        for x in self.players:
+                    if x in self.progs:
+                        self.app = x
+                        break
+                    else:
+                        self.app = False
+        
+        if not self.app:
+            self.display_message("Couldn't find a supported media application")
+            return 
+
+        # TODO In similar fashion implement support for other media application like amarok, rhythmbox, etc
+        if self.app == "banshee":
+            self.banshee_playing()
+        else:
+            self.display_message("Support for other media player will be added soon!")
+
+    def banshee_playing(self):
+        """Retrives currently playing song name and artist name from banshee"""
+        try:
+            self.banshee = self.bus.get_object("org.bansheeproject.Banshee","/org/bansheeproject/Banshee/PlayerEngine")
+            status = self.banshee.GetCurrentState()
+            
+            if status == "playing":
+                currentTrack = self.banshee.GetCurrentTrack()
+                self.set_artist_song_entry(currentTrack['artist'], currentTrack['name'])
+                artist = self.clean_user_input(currentTrack['artist'])
+                song = self.clean_user_input(currentTrack['name'])
+                self.get_lyrics(artist, song)
+            else:
+                self.display_message("No media player playing!")
+        except:
+            self.display_message("Something wrong with D-Bus")
+            
+        
 
 # === EXECUTION ================================================================
 if __name__ == "__main__":
